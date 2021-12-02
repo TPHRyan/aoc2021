@@ -1,6 +1,7 @@
 use crate::AppParams;
 
-use std::io::Read;
+use std::fs::File;
+use std::io::{self, BufRead, Read};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -17,10 +18,15 @@ pub fn int_lines<'a>(
 ) -> Box<dyn Iterator<Item = Result<usize, ParseIntError>> + 'a> {
     Box::new(
         input
-            .split("\n")
+            .lines()
             .filter(|&slice| slice != "")
             .map(|slice| usize::from_str(slice)),
     )
+}
+
+pub fn read_data_lines(params: AppParams) -> io::Lines<io::BufReader<File>> {
+    let file = params.data_file;
+    io::BufReader::new(file).lines()
 }
 
 #[cfg(test)]
