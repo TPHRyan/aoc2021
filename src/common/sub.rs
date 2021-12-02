@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use micromath::vector;
 
 #[derive(Debug)]
 pub enum Direction {
@@ -18,20 +18,8 @@ impl Direction {
     }
 }
 
-#[derive(Debug)]
-pub struct Position {
-    pub h_pos: usize,
-    pub depth: usize,
-}
+pub type Position = vector::Vector2d<i32>;
 
-impl Position {
-    pub fn new(h_pos: usize, depth: usize) -> Position {
-        Position { h_pos, depth }
-    }
-}
-
-impl Display for Position {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "(h: {}, d: {})", self.h_pos, self.depth)
-    }
+pub fn position(x: i32, y: i32) -> Position {
+    vector::Vector2d { x, y }
 }
