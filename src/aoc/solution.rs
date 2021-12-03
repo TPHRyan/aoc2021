@@ -4,7 +4,7 @@ mod day_2;
 use super::challenge::Challenge;
 use crate::{AppParams, Result};
 
-type SolutionFn = fn(Challenge, AppParams) -> Result<()>;
+type SolutionFn = fn(String) -> Result<()>;
 #[allow(dead_code)]
 pub struct ChallengeSolution {
     day: u8,
@@ -22,7 +22,15 @@ impl ChallengeSolution {
     }
 
     pub fn run(&self, challenge: Challenge, params: AppParams) -> Result<()> {
-        (self.solution_fn)(challenge, params)
+        (self.solution_fn)(resolve_challenge_data(challenge, params))
+    }
+}
+
+fn resolve_challenge_data(challenge: Challenge, params: AppParams) -> String {
+    if params.use_example_data {
+        challenge.example_data
+    } else {
+        challenge.data
     }
 }
 
@@ -30,13 +38,13 @@ pub fn get_challenge_solution(day: u8, part: u8) -> Option<ChallengeSolution> {
     let solution_with_fn = |fn_ptr: SolutionFn| Some(ChallengeSolution::new(day, part, fn_ptr));
     match day {
         1 => match part {
-            1 => solution_with_fn(day_1::solve_day_1_part_1),
-            2 => solution_with_fn(day_1::solve_day_1_part_2),
+            1 => solution_with_fn(day_1::solve_part_1),
+            2 => solution_with_fn(day_1::solve_part_2),
             _ => None,
         },
         2 => match part {
-            1 => solution_with_fn(day_2::solve_day_2_part_1),
-            2 => solution_with_fn(day_2::solve_day_2_part_2),
+            1 => solution_with_fn(day_2::solve_part_1),
+            2 => solution_with_fn(day_2::solve_part_2),
             _ => None,
         },
         _ => None,

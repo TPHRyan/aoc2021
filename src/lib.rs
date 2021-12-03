@@ -7,7 +7,6 @@ use std::io;
 use std::io::Write;
 use std::str::FromStr;
 
-use crate::aoc::Challenge;
 use common::AppParams;
 use common::Error;
 use common::Result;
