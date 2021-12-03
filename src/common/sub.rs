@@ -1,4 +1,30 @@
+mod movements;
+
 use micromath::vector;
+
+pub use movements::move_linear;
+
+pub struct Submarine {
+    pub position: Position,
+    pub aim: i32,
+    move_fn: SubMoveFn,
+}
+
+type SubMoveFn = fn(sub: &Submarine, direction: Direction, distance: i32) -> Submarine;
+
+impl Submarine {
+    pub fn new(move_fn: SubMoveFn) -> Submarine {
+        Submarine {
+            position: position(0, 0),
+            aim: 0,
+            move_fn,
+        }
+    }
+
+    pub fn apply_move(&self, direction: Direction, distance: i32) -> Submarine {
+        (self.move_fn)(self, direction, distance)
+    }
+}
 
 #[derive(Debug)]
 pub enum Direction {
