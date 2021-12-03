@@ -1,4 +1,16 @@
-use super::{position, Direction, Submarine};
+use super::{position, Direction, SubMoveFn, Submarine};
+
+pub enum MovementStyle {
+    DIRECTIONAL,
+    LINEAR,
+}
+
+pub fn get_movement_fn(style: MovementStyle) -> SubMoveFn {
+    match style {
+        MovementStyle::DIRECTIONAL => move_directional,
+        MovementStyle::LINEAR => move_linear,
+    }
+}
 
 pub fn move_directional(sub: &Submarine, direction: Direction, distance: i32) -> Submarine {
     Submarine {
@@ -15,7 +27,6 @@ pub fn move_directional(sub: &Submarine, direction: Direction, distance: i32) ->
     }
 }
 
-#[allow(dead_code)]
 pub fn move_linear(sub: &Submarine, direction: Direction, distance: i32) -> Submarine {
     Submarine {
         position: match direction {

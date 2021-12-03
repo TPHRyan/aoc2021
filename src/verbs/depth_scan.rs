@@ -3,27 +3,26 @@ use std::num::ParseIntError;
 
 use crate::common;
 
-pub fn run(mut params: common::AppParams) -> Result<(), String> {
-    let file_contents = common::get_file_contents(&mut params)?;
-    let num_increases = count_increases_windowed(common::int_lines(&file_contents), 3)?;
+pub fn run<T>(depth_lines: T, window_size: usize) -> common::Result<()>
+where
+    T: Iterator<Item = Result<i32, ParseIntError>>,
+{
+    let num_increases = count_increases_windowed(depth_lines, window_size)?;
     println!("The depth increased {} times.", num_increases);
     Ok(())
 }
 
-fn count_increases_windowed<T: Iterator<Item = Result<usize, ParseIntError>>>(
-    depths: T,
-    window_size: usize,
-) -> Result<usize, String> {
+fn count_increases_windowed<T>(depths: T, window_size: usize) -> common::Result<u32>
+where
+    T: Iterator<Item = Result<i32, ParseIntError>>,
+{
     let mut num_increases = 0;
-    let mut window: VecDeque<usize> = VecDeque::new();
+    let mut window: VecDeque<i32> = VecDeque::new();
     for depth in depths {
-        let safe_depth: usize = match depth {
-            Ok(depth) => depth,
-            Err(err) => return Err(format!("{}", err)),
-        };
+        let safe_depth: i32 = depth?;
         if window.len() >= window_size {
-            let previous_start: usize = window.pop_front().unwrap();
-            let window_rest_sum: usize = window.iter().sum();
+            let previous_start: i32 = window.pop_front().unwrap();
+            let window_rest_sum: i32 = window.iter().sum();
             let previous_sum = previous_start + window_rest_sum;
             let next_sum = safe_depth + window_rest_sum;
             if previous_sum < next_sum {

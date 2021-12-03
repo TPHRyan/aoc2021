@@ -1,12 +1,39 @@
 mod helpers;
 pub mod sub;
 
-pub use helpers::get_file_contents;
+use core::result::Result as CoreResult;
+use std::error::Error as ErrorTrait;
+use std::fmt::{Debug, Display, Formatter};
+
 pub use helpers::int_lines;
-pub use helpers::read_data_lines;
 
 pub struct AppParams {
-    pub verb: String,
-    pub data_file_path: String,
-    pub data_file: std::fs::File,
+    pub program_name: String,
+    pub use_example_data: bool,
 }
+
+pub type Result<T> = CoreResult<T, Box<dyn ErrorTrait>>;
+
+#[derive(Debug)]
+pub struct Error {
+    message: String,
+}
+
+impl Error {
+    pub fn new<T>(message: &T) -> Error
+    where
+        T: ToString,
+    {
+        Error {
+            message: message.to_string(),
+        }
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl ErrorTrait for Error {}

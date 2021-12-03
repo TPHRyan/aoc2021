@@ -2,8 +2,10 @@ mod movements;
 
 use micromath::vector;
 
+pub use movements::get_movement_fn;
 pub use movements::move_directional;
 pub use movements::move_linear;
+pub use movements::MovementStyle;
 
 pub struct Submarine {
     pub position: Position,

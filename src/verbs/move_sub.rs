@@ -1,16 +1,17 @@
-use std::io::{BufReader, Lines};
 use std::str::FromStr;
 
-use crate::common;
+pub use crate::common::sub::MovementStyle;
 use crate::common::sub::{self, Submarine};
-use crate::AppParams;
+use crate::{Error, Result};
 
-pub fn run(params: AppParams) -> Result<(), String> {
-    let position_result: Result<Submarine, String> = parse_and_execute_instructions(
-        Submarine::new(sub::move_directional),
-        common::read_data_lines(params),
-    );
-    match position_result {
+pub fn run<'a, T>(move_instructions: T, movement_style: MovementStyle) -> Result<()>
+where
+    T: Iterator<Item = &'a str>,
+{
+    let init_sub = Submarine::new(sub::get_movement_fn(movement_style));
+    let final_result: Result<Submarine> =
+        parse_and_execute_instructions(init_sub, move_instructions);
+    match final_result {
         Ok(final_sub) => {
             let final_position = final_sub.position;
             println!(
@@ -25,20 +26,19 @@ pub fn run(params: AppParams) -> Result<(), String> {
     }
 }
 
-fn parse_and_execute_instructions(
+fn parse_and_execute_instructions<'a, T>(
     sub: Submarine,
-    mut move_instructions: Lines<BufReader<std::fs::File>>,
-) -> Result<Submarine, String> {
-    move_instructions.try_fold(
-        sub,
-        |prev_sub, instruction_result| match instruction_result {
-            Ok(instruction) => parse_and_execute_instruction(instruction, prev_sub),
-            Err(err) => Err(format!("{}", err)),
-        },
-    )
+    mut move_instructions: T,
+) -> Result<Submarine>
+where
+    T: Iterator<Item = &'a str>,
+{
+    move_instructions.try_fold(sub, |prev_sub, instruction| {
+        parse_and_execute_instruction(instruction, prev_sub)
+    })
 }
 
-fn parse_and_execute_instruction(instruction: String, sub: Submarine) -> Result<Submarine, String> {
+fn parse_and_execute_instruction(instruction: &str, sub: Submarine) -> Result<Submarine> {
     if instruction == "" {
         return Ok(sub);
     }
@@ -46,42 +46,41 @@ fn parse_and_execute_instruction(instruction: String, sub: Submarine) -> Result<
     Ok(sub.apply_move(direction, distance))
 }
 
-fn parse_instruction(instruction: String) -> Result<(sub::Direction, i32), String> {
+fn parse_instruction(instruction: &str) -> Result<(sub::Direction, i32)> {
     let words: Vec<&str> = instruction.split_whitespace().collect();
     if words.len() < 2 {
-        return Err(format!("Not enough words in instruction: {}", instruction));
+        return Err(Box::new(Error::new(&format!(
+            "Not enough words in instruction: {}",
+            instruction
+        ))));
     }
     let direction = sub::Direction::from_str(words[0]);
     if let None = direction {
-        return Err(format!("Unknown direction: {}", words[0]));
+        return Err(Box::new(Error::new(&format!(
+            "Unknown direction: {}",
+            words[0]
+        ))));
     }
     let magnitude = i32::from_str(words[1]);
     if let Err(_) = magnitude {
-        return Err(format!("Invalid magnitude \"{}\" provided!", words[1]));
+        return Err(Box::new(Error::new(&format!(
+            "Invalid magnitude \"{}\" provided!",
+            words[1]
+        ))));
     }
     return Ok((direction.unwrap(), magnitude.unwrap()));
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_and_execute_instruction, sub, Submarine};
-    use std::str::Lines;
+    use super::{parse_and_execute_instructions, sub, Result, Submarine};
 
     const TEST_STR: &str = "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2";
 
-    fn execute_safe_instructions(
-        mut lines: Lines,
-        move_fn: sub::SubMoveFn,
-    ) -> Result<Submarine, String> {
-        lines.try_fold(Submarine::new(move_fn), |prev_sub, instruction| {
-            parse_and_execute_instruction(String::from(instruction), prev_sub)
-        })
-    }
-
     #[test]
     fn move_directional_works_on_test_data() {
-        let final_result: Result<Submarine, String> =
-            execute_safe_instructions(TEST_STR.lines(), sub::move_directional);
+        let final_result: Result<Submarine> =
+            parse_and_execute_instructions(Submarine::new(sub::move_directional), TEST_STR.lines());
         assert!(final_result.is_ok());
         let final_sub = final_result.unwrap();
         let position = final_sub.position;
@@ -91,8 +90,8 @@ mod tests {
 
     #[test]
     fn move_linear_works_on_test_data() {
-        let final_result: Result<Submarine, String> =
-            execute_safe_instructions(TEST_STR.lines(), sub::move_linear);
+        let final_result: Result<Submarine> =
+            parse_and_execute_instructions(Submarine::new(sub::move_linear), TEST_STR.lines());
         assert!(final_result.is_ok());
         let final_sub = final_result.unwrap();
         let position = final_sub.position;
