@@ -2,6 +2,7 @@ mod movements;
 
 use micromath::vector;
 
+pub use movements::move_directional;
 pub use movements::move_linear;
 
 pub struct Submarine {
@@ -10,7 +11,7 @@ pub struct Submarine {
     move_fn: SubMoveFn,
 }
 
-type SubMoveFn = fn(sub: &Submarine, direction: Direction, distance: i32) -> Submarine;
+pub type SubMoveFn = fn(sub: &Submarine, direction: Direction, distance: i32) -> Submarine;
 
 impl Submarine {
     pub fn new(move_fn: SubMoveFn) -> Submarine {
