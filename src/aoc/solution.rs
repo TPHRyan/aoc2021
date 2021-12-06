@@ -1,5 +1,6 @@
 mod day_1;
 mod day_2;
+mod day_3;
 
 use super::challenge::Challenge;
 use crate::{AppParams, Result};
@@ -27,7 +28,7 @@ impl ChallengeSolution {
 }
 
 fn resolve_challenge_data(challenge: Challenge, params: AppParams) -> String {
-    if params.use_example_data {
+    if params.use_example_data || challenge.data == "" {
         challenge.example_data
     } else {
         challenge.data
@@ -35,18 +36,30 @@ fn resolve_challenge_data(challenge: Challenge, params: AppParams) -> String {
 }
 
 pub fn get_challenge_solution(day: u8, part: u8) -> Option<ChallengeSolution> {
-    let solution_with_fn = |fn_ptr: SolutionFn| Some(ChallengeSolution::new(day, part, fn_ptr));
-    match day {
+    let maybe_fn_ptr: Option<SolutionFn> = match day {
         1 => match part {
-            1 => solution_with_fn(day_1::solve_part_1),
-            2 => solution_with_fn(day_1::solve_part_2),
+            1 => Some(day_1::solve_part_1),
+            2 => Some(day_1::solve_part_2),
             _ => None,
         },
         2 => match part {
-            1 => solution_with_fn(day_2::solve_part_1),
-            2 => solution_with_fn(day_2::solve_part_2),
+            1 => Some(day_2::solve_part_1),
+            2 => Some(day_2::solve_part_2),
+            _ => None,
+        },
+        3 => match part {
+            1 => Some(day_3::solve_part_1),
             _ => None,
         },
         _ => None,
-    }
+    };
+    create_solution_from(day, part, maybe_fn_ptr)
+}
+
+fn create_solution_from(
+    day: u8,
+    part: u8,
+    maybe_fn_ptr: Option<SolutionFn>,
+) -> Option<ChallengeSolution> {
+    maybe_fn_ptr.map(|fn_ptr| ChallengeSolution::new(day, part, fn_ptr))
 }

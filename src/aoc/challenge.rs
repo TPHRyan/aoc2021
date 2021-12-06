@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::Read;
 
 use serde::{Deserialize, Serialize};
 
@@ -25,9 +25,9 @@ fn default_challenge_parts() -> u8 {
 }
 
 pub fn get_challenge(day: u8) -> Result<Challenge> {
-    let challenges_file = File::open("./data/challenges.json")?;
-    let challenges_map: HashMap<String, Challenge> =
-        serde_json::from_reader(BufReader::new(challenges_file))?;
+    let mut challenges_str = String::new();
+    let _result = File::open("./data/challenges.json")?.read_to_string(&mut challenges_str);
+    let challenges_map: HashMap<String, Challenge> = serde_json::from_str(challenges_str.as_str())?;
     match challenges_map.get(&format!("{}", day)) {
         Some(challenge) => Ok(Challenge {
             day: if challenge.day == 0 {

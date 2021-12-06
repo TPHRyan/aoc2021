@@ -1,15 +1,31 @@
+use std::iter::Filter;
 use std::num::ParseIntError;
-use std::str::FromStr;
+use std::str::Lines;
+
+const ASCII_ZERO_VALUE: u8 = '0' as u8;
+
+pub fn bit_lines(input: &str) -> Vec<Vec<u8>> {
+    input
+        .lines()
+        .map(|line| line.bytes().map(|byte| byte - ASCII_ZERO_VALUE).collect())
+        .collect()
+}
 
 pub fn int_lines<'a>(
     input: &'a String,
 ) -> Box<dyn Iterator<Item = Result<i32, ParseIntError>> + 'a> {
-    Box::new(
-        input
-            .lines()
-            .filter(|&slice| slice != "")
-            .map(|slice| i32::from_str(slice)),
-    )
+    int_lines_radix(input, 10)
+}
+
+pub fn int_lines_radix<'a>(
+    input: &'a String,
+    radix: u32,
+) -> Box<dyn Iterator<Item = Result<i32, ParseIntError>> + 'a> {
+    Box::new(filter_newlines(input).map(move |slice| i32::from_str_radix(slice, radix)))
+}
+
+pub fn filter_newlines<'a>(input: &'a String) -> Filter<Lines<'_>, fn(&&'a str) -> bool> {
+    input.lines().filter(|&slice| slice != "")
 }
 
 #[cfg(test)]
