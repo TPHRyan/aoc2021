@@ -1,14 +1,36 @@
+mod styles;
+
 use std::str::FromStr;
 
-pub use crate::common::sub::MovementStyle;
-use crate::common::sub::{self, Submarine};
+use super::Submarine;
 use crate::{Error, Result};
+pub use styles::MovementStyle;
+
+#[derive(Debug)]
+pub enum Direction {
+    FORWARD,
+    DOWN,
+    UP,
+}
+
+impl Direction {
+    pub fn from_str(str: &str) -> Option<Direction> {
+        match str {
+            "forward" => Some(Direction::FORWARD),
+            "down" => Some(Direction::DOWN),
+            "up" => Some(Direction::UP),
+            _ => None,
+        }
+    }
+}
+
+pub type SubMoveFn = fn(sub: &Submarine, direction: Direction, distance: i32) -> Submarine;
 
 pub fn run<'a, T>(move_instructions: T, movement_style: MovementStyle) -> Result<()>
 where
     T: Iterator<Item = &'a str>,
 {
-    let init_sub = Submarine::new(sub::get_movement_fn(movement_style));
+    let init_sub = Submarine::new(styles::get_movement_fn(movement_style));
     let final_result: Result<Submarine> =
         parse_and_execute_instructions(init_sub, move_instructions);
     match final_result {
@@ -46,7 +68,7 @@ fn parse_and_execute_instruction(instruction: &str, sub: Submarine) -> Result<Su
     Ok(sub.apply_move(direction, distance))
 }
 
-fn parse_instruction(instruction: &str) -> Result<(sub::Direction, i32)> {
+fn parse_instruction(instruction: &str) -> Result<(super::Direction, i32)> {
     let words: Vec<&str> = instruction.split_whitespace().collect();
     if words.len() < 2 {
         return Err(Box::new(Error::new(&format!(
@@ -54,7 +76,7 @@ fn parse_instruction(instruction: &str) -> Result<(sub::Direction, i32)> {
             instruction
         ))));
     }
-    let direction = sub::Direction::from_str(words[0]);
+    let direction = super::Direction::from_str(words[0]);
     if let None = direction {
         return Err(Box::new(Error::new(&format!(
             "Unknown direction: {}",
@@ -73,14 +95,16 @@ fn parse_instruction(instruction: &str) -> Result<(sub::Direction, i32)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_and_execute_instructions, sub, Result, Submarine};
+    use super::{parse_and_execute_instructions, styles, Result, Submarine};
 
     const TEST_STR: &str = "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2";
 
     #[test]
     fn move_directional_works_on_test_data() {
-        let final_result: Result<Submarine> =
-            parse_and_execute_instructions(Submarine::new(sub::move_directional), TEST_STR.lines());
+        let final_result: Result<Submarine> = parse_and_execute_instructions(
+            Submarine::new(styles::move_directional),
+            TEST_STR.lines(),
+        );
         assert!(final_result.is_ok());
         let final_sub = final_result.unwrap();
         let position = final_sub.position;
@@ -91,7 +115,7 @@ mod tests {
     #[test]
     fn move_linear_works_on_test_data() {
         let final_result: Result<Submarine> =
-            parse_and_execute_instructions(Submarine::new(sub::move_linear), TEST_STR.lines());
+            parse_and_execute_instructions(Submarine::new(styles::move_linear), TEST_STR.lines());
         assert!(final_result.is_ok());
         let final_sub = final_result.unwrap();
         let position = final_sub.position;

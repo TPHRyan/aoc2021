@@ -3,7 +3,7 @@ use std::num::ParseIntError;
 
 use crate::common;
 
-pub fn run<T>(depth_lines: T, window_size: usize) -> common::Result<()>
+pub fn run_depth_scan<T>(depth_lines: T, window_size: usize) -> common::Result<()>
 where
     T: Iterator<Item = Result<i32, ParseIntError>>,
 {

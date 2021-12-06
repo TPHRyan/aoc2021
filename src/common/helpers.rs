@@ -31,6 +31,24 @@ pub fn filter_newlines<'a>(input: &'a String) -> Filter<Lines<'_>, fn(&&'a str) 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn bit_lines_produces_correct_vectors() {
+        let test_str = "11011\n01011";
+        let expected_data: [[u8; 5]; 2] = [[1, 1, 0, 1, 1], [0, 1, 0, 1, 1]];
+
+        let bit_lines = bit_lines(test_str);
+        assert_eq!(expected_data.len(), bit_lines.len());
+        for i in 0..expected_data.len() {
+            let expected_line = expected_data[i];
+            let bit_line = &bit_lines[i];
+            assert_eq!(expected_line.len(), bit_line.len());
+            for j in 0..expected_line.len() {
+                assert_eq!(expected_line[j], bit_line[j]);
+            }
+        }
+    }
+
     #[test]
     fn int_lines_splits_correct_times() {
         let test_str = String::from("28\n1423\n9043\n192");

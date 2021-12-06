@@ -1,5 +1,4 @@
 mod helpers;
-pub mod sub;
 
 use core::result::Result as CoreResult;
 use std::error::Error as ErrorTrait;

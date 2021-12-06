@@ -1,6 +1,6 @@
 mod aoc;
 mod common;
-mod verbs;
+mod sub;
 
 use std::env;
 use std::io;

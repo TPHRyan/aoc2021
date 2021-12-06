@@ -1,4 +1,5 @@
-use super::{position, Direction, SubMoveFn, Submarine};
+use super::{Direction, SubMoveFn};
+use crate::sub::{position, Submarine};
 
 pub enum MovementStyle {
     DIRECTIONAL,

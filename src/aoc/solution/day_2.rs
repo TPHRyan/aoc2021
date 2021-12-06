@@ -1,10 +1,13 @@
-use crate::verbs::move_sub;
+use crate::sub::movement as sub_movement;
 use crate::Result;
 
 pub fn solve_part_1(challenge_data: String) -> Result<()> {
-    move_sub::run(challenge_data.lines(), move_sub::MovementStyle::LINEAR)
+    sub_movement::run(challenge_data.lines(), sub_movement::MovementStyle::LINEAR)
 }
 
 pub fn solve_part_2(challenge_data: String) -> Result<()> {
-    move_sub::run(challenge_data.lines(), move_sub::MovementStyle::DIRECTIONAL)
+    sub_movement::run(
+        challenge_data.lines(),
+        sub_movement::MovementStyle::DIRECTIONAL,
+    )
 }

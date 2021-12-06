@@ -1,6 +1,6 @@
 use crate::Result;
 
-pub fn run(binary_numbers: Vec<Vec<u8>>) -> Result<()> {
+pub fn run_gamma_epsilon_report(binary_numbers: Vec<Vec<u8>>) -> Result<()> {
     let counts_vec = count_digits_in_binary_numbers(binary_numbers);
     let gamma_rate = get_gamma_rate_from_counts(&counts_vec);
     let epsilon_rate = get_epsilon_rate_from_counts(&counts_vec);
