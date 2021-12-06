@@ -49,6 +49,7 @@ pub fn get_challenge_solution(day: u8, part: u8) -> Option<ChallengeSolution> {
         },
         3 => match part {
             1 => Some(day_3::solve_part_1),
+            2 => Some(day_3::solve_part_2),
             _ => None,
         },
         _ => None,

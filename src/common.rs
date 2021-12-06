@@ -20,7 +20,7 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new<T>(message: &T) -> Error
+    pub fn new<T: ?Sized>(message: &T) -> Error
     where
         T: ToString,
     {
