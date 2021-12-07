@@ -1,3 +1,4 @@
+mod bingo;
 pub mod board;
 
 use crate::Result;
