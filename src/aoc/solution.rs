@@ -5,20 +5,13 @@ use crate::{AppParams, Result};
 pub use solutions_implemented::get_challenge_solution;
 
 type SolutionFn = fn(String) -> Result<()>;
-#[allow(dead_code)]
 pub struct ChallengeSolution {
-    day: u8,
-    part: u8,
     solution_fn: SolutionFn,
 }
 
 impl ChallengeSolution {
-    fn new(day: u8, part: u8, solution_fn: SolutionFn) -> ChallengeSolution {
-        ChallengeSolution {
-            day,
-            part,
-            solution_fn,
-        }
+    fn new(solution_fn: SolutionFn) -> ChallengeSolution {
+        ChallengeSolution { solution_fn }
     }
 
     pub fn run(&self, challenge: Challenge, params: AppParams) -> Result<()> {
