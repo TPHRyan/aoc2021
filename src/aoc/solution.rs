@@ -1,6 +1,7 @@
 mod day_1;
 mod day_2;
 mod day_3;
+mod day_4;
 
 use super::challenge::Challenge;
 use crate::{AppParams, Result};
@@ -50,6 +51,11 @@ pub fn get_challenge_solution(day: u8, part: u8) -> Option<ChallengeSolution> {
         3 => match part {
             1 => Some(day_3::solve_part_1),
             2 => Some(day_3::solve_part_2),
+            _ => None,
+        },
+        4 => match part {
+            1 => Some(day_4::solve_part_1),
+            2 => Some(day_4::solve_part_2),
             _ => None,
         },
         _ => None,
