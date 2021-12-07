@@ -83,25 +83,43 @@ impl Display for BingoBoard {
             let [x, y] = self.numbers[k];
             board_data[y][x] = *k;
         }
+        let bingo_col: usize =
+            self.bingo
+                .as_ref()
+                .map_or(usize::MAX, |bingo| match bingo.triggered_by {
+                    BingoTrigger::COLUMN(col) => col,
+                    _ => usize::MAX,
+                });
+        let bingo_row: usize =
+            self.bingo
+                .as_ref()
+                .map_or(usize::MAX, |bingo| match bingo.triggered_by {
+                    BingoTrigger::ROW(row) => row,
+                    _ => usize::MAX,
+                });
         let mut board_str = String::new();
-        for row in board_data {
-            for col in row {
-                let raw_col = format!("{}", col);
-                let col_formatted = if self.called_numbers.contains_key(&col) {
-                    format!("\x1B[4m{}\x1B[24m", raw_col)
+        for (row, row_arr) in board_data.iter().enumerate() {
+            for (col, val) in row_arr.iter().enumerate() {
+                let raw_val = format!("{}", val);
+                let val_formatted = if self.called_numbers.contains_key(&val) {
+                    if col == bingo_col || row == bingo_row {
+                        format!("\x1B[9m{}\x1B[29m", raw_val)
+                    } else {
+                        format!("\x1B[4m{}\x1B[24m", raw_val)
+                    }
                 } else {
-                    format!("{}", raw_col)
+                    format!("{}", raw_val)
                 };
-                let col_str = format!(
+                let val_str = format!(
                     "{}{}",
-                    if raw_col.len() < 3 {
-                        " ".repeat(3 - raw_col.len())
+                    if raw_val.len() < 3 {
+                        " ".repeat(3 - raw_val.len())
                     } else {
                         String::from("")
                     },
-                    col_formatted,
+                    val_formatted,
                 );
-                board_str = format!("{}{}", board_str, col_str);
+                board_str = format!("{}{}", board_str, val_str);
             }
             board_str += "\n";
         }
@@ -177,6 +195,7 @@ mod tests {
         board.call_number(23);
         assert_eq!(5, board.longest_len());
         assert!(board.has_bingo());
+        println!("{}", board);
     }
 
     fn get_test_board() -> BingoBoard {
