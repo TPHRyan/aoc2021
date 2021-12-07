@@ -1,4 +1,4 @@
-use super::bingo::{Bingo, BingoTrigger};
+use super::bingo::{Bingo, BingoCallResult, BingoTrigger};
 use crate::Result;
 use serde_scan;
 use std::cmp;
@@ -32,32 +32,40 @@ impl BingoBoard {
         })
     }
 
-    pub fn call_number(&mut self, n: u32) {
+    pub fn call_number(&mut self, n: u32) -> BingoCallResult {
         if self.numbers.contains_key(&n) && !self.called_numbers.contains_key(&n) {
             self.called_numbers.insert(n, true);
             let [x, y] = self.numbers[&n];
             self.filled_cols[x].push(n);
             self.filled_rows[y].push(n);
 
-            self.check_bingo(x, y, n);
+            return if self.check_bingo(x, y, n) {
+                BingoCallResult::BINGO
+            } else {
+                BingoCallResult::CROSS
+            };
         }
+        BingoCallResult::NONE
     }
 
-    fn check_bingo(&mut self, col: usize, row: usize, called_number: u32) {
-        if self.bingo.is_some() {
-            return;
-        }
-        if self.filled_cols[col].len() >= 5 {
+    fn check_bingo(&mut self, col: usize, row: usize, called_number: u32) -> bool {
+        return if self.bingo.is_some() {
+            false
+        } else if self.filled_cols[col].len() >= 5 {
             self.bingo = Some(Bingo {
                 final_number: called_number,
                 triggered_by: BingoTrigger::COLUMN(col),
             });
+            true
         } else if self.filled_rows[row].len() >= 5 {
             self.bingo = Some(Bingo {
                 final_number: called_number,
                 triggered_by: BingoTrigger::ROW(row),
             });
-        }
+            true
+        } else {
+            false
+        };
     }
 
     pub fn get_score(&self) -> u32 {

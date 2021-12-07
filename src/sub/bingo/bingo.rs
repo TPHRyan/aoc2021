@@ -1,3 +1,9 @@
+pub enum BingoCallResult {
+    BINGO,
+    CROSS,
+    NONE,
+}
+
 pub enum BingoTrigger {
     COLUMN(usize),
     ROW(usize),
