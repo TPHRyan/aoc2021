@@ -19,7 +19,9 @@ pub fn run_bingo(random_numbers: Vec<u32>, board_inputs: Vec<String>) -> Result<
             .collect::<Vec<String>>()
             .join(", ")
     );
-    boards.iter().for_each(|board| println!("{}", board));
+    winners
+        .iter()
+        .for_each(|i| println!("Score: {}\n{}", boards[*i].get_score(), boards[*i]));
     Ok(())
 }
 

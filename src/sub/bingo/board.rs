@@ -60,6 +60,23 @@ impl BingoBoard {
         }
     }
 
+    pub fn get_score(&self) -> u32 {
+        match &self.bingo {
+            Some(bingo) => {
+                let unmarked_numbers_total = self.total_unmarked_numbers();
+                bingo.final_number * unmarked_numbers_total
+            }
+            None => 0,
+        }
+    }
+
+    fn total_unmarked_numbers(&self) -> u32 {
+        self.numbers
+            .keys()
+            .filter(|&n| !self.called_numbers.contains_key(n))
+            .fold(0, |acc, n| acc + n)
+    }
+
     pub fn has_bingo(&self) -> bool {
         self.bingo.is_some()
     }
