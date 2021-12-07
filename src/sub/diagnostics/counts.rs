@@ -9,22 +9,6 @@ impl DigitCounts {
         DigitCounts { counts: vec![] }
     }
 
-    #[cfg(test)]
-    pub fn from_vec<T>(vec: Vec<[T; 2]>) -> DigitCounts
-    where
-        T: Copy,
-        usize: From<T>,
-    {
-        let usize_vec: Vec<[usize; 2]> = vec
-            .iter()
-            .map(|[zero_count, one_count]| {
-                let usize_arr: [usize; 2] = [usize::from(*zero_count), usize::from(*one_count)];
-                usize_arr
-            })
-            .collect();
-        DigitCounts { counts: usize_vec }
-    }
-
     pub fn from_binary_numbers(numbers: &Vec<Vec<u8>>) -> DigitCounts {
         let mut digit_counts = DigitCounts::new();
         let first_number = numbers.get(0);
