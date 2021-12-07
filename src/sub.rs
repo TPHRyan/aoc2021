@@ -1,3 +1,4 @@
+pub mod bingo;
 pub mod diagnostics;
 pub mod movement;
 pub mod scanning;

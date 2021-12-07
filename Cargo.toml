@@ -9,3 +9,4 @@ edition = "2021"
 micromath = { version = "2.0.0", features = ["vector"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.72"
+serde_scan = "0.4.1"

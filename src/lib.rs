@@ -109,8 +109,17 @@ fn prompt(message: &str) -> Result<String> {
 
 pub fn parse_args(mut args: env::Args) -> Result<AppParams> {
     let program_name = args.next().unwrap();
+    let mut use_example_data = false;
+
+    while let Some(next_arg) = args.next() {
+        match next_arg.as_str() {
+            "--use-example-data" => use_example_data = true,
+            _ => {}
+        }
+    }
+
     Ok(AppParams {
         program_name,
-        use_example_data: false,
+        use_example_data,
     })
 }
