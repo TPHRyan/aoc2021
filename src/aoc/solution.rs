@@ -1,3 +1,4 @@
+mod day_6;
 mod solutions_implemented;
 
 use super::challenge::Challenge;
