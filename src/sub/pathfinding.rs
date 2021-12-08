@@ -10,6 +10,14 @@ impl LineSegment {
     pub fn from((p1, p2): (Vector2d<i32>, Vector2d<i32>)) -> LineSegment {
         LineSegment { p1, p2 }
     }
+
+    pub fn from_str(s: &str) -> Result<LineSegment, serde_scan::ScanError> {
+        let (x1, y1, x2, y2): (i32, i32, i32, i32) = serde_scan::scan!("{},{} -> {},{}" <- s)?;
+        Ok(LineSegment::from((
+            Vector2d::from((x1, y1)),
+            Vector2d::from((x2, y2)),
+        )))
+    }
 }
 
 #[derive(Debug)]
@@ -72,6 +80,23 @@ pub fn count_dangerous_points(vents: &Vec<LineSegment>) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const TEST_STR: &str = "0,9 -> 5,9\n8,0 -> 0,8\n9,4 -> 3,4\n2,2 -> 2,1\n7,0 -> 7,4\n6,4 -> 2,0\n0,9 -> 2,9\n3,4 -> 1,4\n0,0 -> 8,8\n5,5 -> 8,2";
+
+    #[test]
+    fn can_create_segments_from_str() {
+        let example_segments = get_example_segments();
+        let segments_result: Result<Vec<LineSegment>, serde_scan::ScanError> = TEST_STR
+            .lines()
+            .map(|line| LineSegment::from_str(line))
+            .collect();
+        assert!(segments_result.is_ok());
+        let segments = segments_result.unwrap();
+        for (expected, actual) in example_segments.iter().zip(segments.iter()) {
+            assert_eq!(expected.p1, actual.p1);
+            assert_eq!(expected.p2, actual.p2);
+        }
+    }
 
     #[test]
     fn count_dangerous_points_works_for_example_data() {

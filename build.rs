@@ -21,6 +21,7 @@ fn main() -> std::io::Result<()> {
         out_dir_path.join("solutions_implemented.in"),
         generate_solution_fn_getter(&solution_modules)?,
     )?;
+    println!("cargo:rerun-if-changed={}", solution_dir.to_str().unwrap());
     Ok(())
 }
 
@@ -35,7 +36,6 @@ fn fetch_solution_modules(
         let entry_path = entry.path();
         let file_path = String::from(entry_path.to_str().unwrap());
         if entry_path.is_file() && file_name.starts_with(module_prefix) {
-            println!("cargo:rerun-if-changed={}", file_path);
             solution_modules.push((file_name.replace(".rs", ""), file_path));
         }
     }
