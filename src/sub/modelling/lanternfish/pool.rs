@@ -20,7 +20,14 @@ impl LanternfishPool {
     }
 
     pub fn num_fish(&self) -> usize {
-        self.data.len()
+        self.data
+            .iter()
+            .fold(0, |acc, Reverse(fish)| acc + fish.quantity)
+    }
+
+    pub fn add_fish(&mut self, mut fish: Lanternfish) {
+        fish.reset(self.current_tick);
+        self.data.push(Reverse(fish));
     }
 
     pub fn simulate_days(&mut self, days: u32) {
@@ -38,15 +45,39 @@ impl LanternfishPool {
                     break;
                 }
                 if let Some(Reverse(mut current_fish)) = self.data.pop() {
-                    if let Some(mut new_fish) = current_fish.tick(t) {
-                        new_fish.reset(t);
-                        self.data.push(Reverse(new_fish));
+                    if let Some(new_fish) = current_fish.tick(t) {
+                        self.add_fish(new_fish);
                     }
                     self.data.push(Reverse(current_fish));
                 }
             } else {
                 break;
             }
+        }
+        self.combine_duplicate_fish();
+    }
+
+    fn combine_duplicate_fish(&mut self) {
+        if self.data.len() <= 1 {
+            return;
+        }
+        let mut combined_fish: Vec<Lanternfish> = Vec::new();
+        let mut previous: Option<Reverse<Lanternfish>> = self.data.pop();
+        while let Some(Reverse(mut current_fish)) = self.data.pop() {
+            if let Some(Reverse(previous_fish)) = previous {
+                if current_fish.can_combine(&previous_fish) {
+                    current_fish.combine(previous_fish);
+                } else {
+                    combined_fish.push(previous_fish);
+                }
+            }
+            previous = Some(Reverse(current_fish));
+        }
+        if let Some(Reverse(previous_fish)) = previous {
+            combined_fish.push(previous_fish);
+        }
+        for fish in combined_fish {
+            self.data.push(Reverse(fish));
         }
     }
 }
@@ -64,12 +95,12 @@ mod tests {
     #[test]
     fn pool_count_equal_to_initial_fish_count() {
         let pool = LanternfishPool::from(vec![
-            Lanternfish::new(),
-            Lanternfish::new(),
-            Lanternfish::new(),
-            Lanternfish::new(),
-            Lanternfish::new(),
-            Lanternfish::new(),
+            Lanternfish::new(1),
+            Lanternfish::new(1),
+            Lanternfish::new(1),
+            Lanternfish::new(1),
+            Lanternfish::new(1),
+            Lanternfish::new(1),
         ]);
         assert_eq!(6, pool.num_fish());
     }

@@ -14,20 +14,34 @@ enum TickAction {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Lanternfish {
+    pub quantity: usize,
     t_last_reproduction: u32,
     t_next_reproduction: u32,
 }
 
 impl Lanternfish {
-    pub fn new() -> Lanternfish {
-        Lanternfish::from(INITIAL_REPRODUCTION_TICKS)
+    pub fn new(quantity: usize) -> Lanternfish {
+        Lanternfish {
+            quantity,
+            t_last_reproduction: 0,
+            t_next_reproduction: INITIAL_REPRODUCTION_TICKS,
+        }
     }
 
     pub fn from(n: u32) -> Lanternfish {
         Lanternfish {
+            quantity: 1,
             t_last_reproduction: 0,
             t_next_reproduction: n,
         }
+    }
+
+    pub fn combine(&mut self, other: Self) {
+        self.quantity += other.quantity;
+    }
+
+    pub fn can_combine(&self, other: &Self) -> bool {
+        self.t_next_reproduction == other.t_next_reproduction
     }
 
     pub fn should_reproduce_on(&self, tick: u32) -> bool {
@@ -41,7 +55,7 @@ impl Lanternfish {
 
     pub fn tick(&mut self, current_tick: u32) -> Option<Lanternfish> {
         match self.check_tick_action(current_tick) {
-            TickAction::Reproduce => Some(Lanternfish::new()),
+            TickAction::Reproduce => Some(Lanternfish::new(self.quantity)),
             TickAction::DoNothing => None,
         }
     }
