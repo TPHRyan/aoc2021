@@ -1,7 +1,6 @@
 use super::bingo::{Bingo, BingoCallResult, BingoTrigger};
 use crate::Result;
 use serde_scan;
-use std::cmp;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
@@ -85,17 +84,19 @@ impl BingoBoard {
             .fold(0, |acc, n| acc + n)
     }
 
+    #[cfg(test)]
     pub fn has_bingo(&self) -> bool {
         self.bingo.is_some()
     }
 
+    #[cfg(test)]
     pub fn longest_len(&self) -> usize {
         let mut longest: usize = 0;
         for col in self.filled_cols.iter() {
-            longest = cmp::max(longest, col.len());
+            longest = std::cmp::max(longest, col.len());
         }
         for row in self.filled_rows.iter() {
-            longest = cmp::max(longest, row.len());
+            longest = std::cmp::max(longest, row.len());
         }
         longest
     }
@@ -220,7 +221,6 @@ mod tests {
         board.call_number(23);
         assert_eq!(5, board.longest_len());
         assert!(board.has_bingo());
-        println!("{}", board);
     }
 
     fn get_test_board() -> BingoBoard {
