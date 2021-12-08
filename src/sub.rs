@@ -1,6 +1,7 @@
 pub mod bingo;
 pub mod diagnostics;
 pub mod movement;
+pub mod pathfinding;
 pub mod scanning;
 
 use micromath::vector;
