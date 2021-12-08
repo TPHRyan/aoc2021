@@ -4,11 +4,13 @@ mod line_segment;
 use danger_map::DangerMap;
 pub use line_segment::LineSegment;
 
-pub fn count_dangerous_points(vents: &Vec<LineSegment>) -> u32 {
+pub fn count_dangerous_points(vents: &Vec<LineSegment>, consider_diagonal_vents: bool) -> u32 {
     let mut danger_map = DangerMap::new();
     for vent in vents {
-        for point in vent.line_points() {
-            danger_map.increment_danger(point);
+        if consider_diagonal_vents || !vent.is_diagonal() {
+            for point in vent.line_points() {
+                danger_map.increment_danger(point);
+            }
         }
     }
     danger_map.count_danger_above(1)
@@ -37,10 +39,17 @@ mod tests {
     }
 
     #[test]
-    fn count_dangerous_points_works_for_example_data() {
+    fn count_dangerous_points_works_for_example_data_orthogonal() {
         let example_segments = get_example_segments();
-        let danger_count = count_dangerous_points(&example_segments);
+        let danger_count = count_dangerous_points(&example_segments, false);
         assert_eq!(5, danger_count);
+    }
+
+    #[test]
+    fn count_dangerous_points_works_for_example_data_diagonal() {
+        let example_segments = get_example_segments();
+        let danger_count = count_dangerous_points(&example_segments, true);
+        assert_eq!(12, danger_count);
     }
 
     fn get_example_segments() -> Vec<LineSegment> {

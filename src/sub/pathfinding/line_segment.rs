@@ -1,4 +1,5 @@
 use micromath::vector::Vector2d;
+use std::iter::{repeat, Map, Repeat, Zip};
 
 pub struct LineSegment {
     pub p1: Vector2d<i32>,
@@ -18,6 +19,10 @@ impl LineSegment {
         )))
     }
 
+    pub fn is_diagonal(&self) -> bool {
+        self.p1.x != self.p2.x && self.p1.y != self.p2.y
+    }
+
     pub fn is_horizontal(&self) -> bool {
         self.p1.y == self.p2.y
     }
@@ -27,26 +32,44 @@ impl LineSegment {
     }
 
     pub fn line_points(&self) -> Box<dyn Iterator<Item = Vector2d<i32>>> {
-        if self.is_horizontal() {
-            self.line_points_horizontal()
+        return if self.is_horizontal() {
+            Box::new(self.line_points_horizontal())
         } else if self.is_vertical() {
-            self.line_points_vertical()
+            Box::new(self.line_points_vertical())
         } else {
-            Box::new(std::iter::empty())
-        }
+            Box::new(self.line_points_diagonal())
+        };
     }
 
-    fn line_points_horizontal(&self) -> Box<dyn Iterator<Item = Vector2d<i32>>> {
-        let y = self.p1.y;
-        let min_x = std::cmp::min(self.p1.x, self.p2.x);
-        let max_x = std::cmp::max(self.p1.x, self.p2.x);
-        Box::new((min_x..(max_x + 1)).map(move |x| Vector2d::from((x, y))))
+    fn line_points_horizontal(
+        &self,
+    ) -> Map<Zip<Box<dyn Iterator<Item = i32>>, Repeat<i32>>, fn((i32, i32)) -> Vector2d<i32>> {
+        let xy_iter = (range_iter(self.p1.x, self.p2.x)).zip(repeat(self.p1.y));
+        xy_iter.map(|(x, y)| Vector2d::from((x, y)))
     }
 
-    fn line_points_vertical(&self) -> Box<dyn Iterator<Item = Vector2d<i32>>> {
-        let x = self.p1.x;
-        let min_y = std::cmp::min(self.p1.y, self.p2.y);
-        let max_y = std::cmp::max(self.p1.y, self.p2.y);
-        Box::new((min_y..(max_y + 1)).map(move |y| Vector2d::from((x, y))))
+    fn line_points_vertical(
+        &self,
+    ) -> Map<Zip<Repeat<i32>, Box<dyn Iterator<Item = i32>>>, fn((i32, i32)) -> Vector2d<i32>> {
+        let xy_iter = repeat(self.p1.x).zip(range_iter(self.p1.y, self.p2.y));
+        xy_iter.map(|(x, y)| Vector2d::from((x, y)))
+    }
+
+    fn line_points_diagonal(
+        &self,
+    ) -> Map<
+        Zip<Box<dyn Iterator<Item = i32>>, Box<dyn Iterator<Item = i32>>>,
+        fn((i32, i32)) -> Vector2d<i32>,
+    > {
+        let xy_iter = (range_iter(self.p1.x, self.p2.x)).zip(range_iter(self.p1.y, self.p2.y));
+        xy_iter.map(|(x, y)| Vector2d::from((x, y)))
+    }
+}
+
+fn range_iter(from: i32, to: i32) -> Box<dyn Iterator<Item = i32>> {
+    if from < to {
+        Box::new(from..=to)
+    } else {
+        Box::new((to..=from).rev())
     }
 }
