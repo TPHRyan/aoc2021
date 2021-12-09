@@ -1,4 +1,5 @@
 pub mod bingo;
+pub mod crypto;
 pub mod diagnostics;
 pub mod modelling;
 pub mod movement;
