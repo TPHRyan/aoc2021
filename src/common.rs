@@ -11,6 +11,8 @@ pub use helpers::int_lines;
 pub struct AppParams {
     pub program_name: String,
     pub use_example_data: bool,
+    pub challenge_day: Option<u32>,
+    pub challenge_part: Option<u32>,
 }
 
 pub type Result<T> = CoreResult<T, Box<dyn ErrorTrait>>;
