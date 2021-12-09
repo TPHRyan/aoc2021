@@ -1,7 +1,8 @@
-pub use lanternfish::{Lanternfish, LanternfishPool};
-
 mod crab_subs;
 mod lanternfish;
+
+pub use crate::sub::modelling::crab_subs::FuelModel;
+pub use lanternfish::{Lanternfish, LanternfishPool};
 
 pub fn simulate_lanternfish(initial_fish: Vec<Lanternfish>, for_days: u32) -> usize {
     let mut pool = LanternfishPool::from(initial_fish);
@@ -9,8 +10,8 @@ pub fn simulate_lanternfish(initial_fish: Vec<Lanternfish>, for_days: u32) -> us
     pool.num_fish()
 }
 
-pub fn calculate_cheapest_alignment_fuel(crab_subs: Vec<u32>) -> u32 {
-    crab_subs::find_cheapest_alignment_cost(crab_subs)
+pub fn calculate_cheapest_alignment_fuel(crab_subs: Vec<u32>, model: FuelModel) -> u32 {
+    crab_subs::find_cheapest_alignment_cost(crab_subs, model)
 }
 
 #[cfg(test)]
@@ -18,10 +19,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn calculate_cheapest_alignment_fuel_is_correct_for_example_data() {
+    fn calculate_cheapest_alignment_fuel_linear_is_correct_for_example_data() {
         let subs = get_example_subs();
-        let cheapest_fuel = calculate_cheapest_alignment_fuel(subs);
+        let cheapest_fuel = calculate_cheapest_alignment_fuel(subs, FuelModel::LINEAR);
         assert_eq!(37, cheapest_fuel);
+    }
+
+    #[test]
+    fn calculate_cheapest_alignment_fuel_triangular_is_correct_for_example_data() {
+        let subs = get_example_subs();
+        let cheapest_fuel = calculate_cheapest_alignment_fuel(subs, FuelModel::TRIANGULAR);
+        assert_eq!(168, cheapest_fuel);
     }
 
     fn get_example_subs() -> Vec<u32> {

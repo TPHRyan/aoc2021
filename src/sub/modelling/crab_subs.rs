@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
-pub fn find_cheapest_alignment_cost(mut subs: Vec<u32>) -> u32 {
+pub enum FuelModel {
+    LINEAR,
+    TRIANGULAR,
+}
+
+pub fn find_cheapest_alignment_cost(mut subs: Vec<u32>, model: FuelModel) -> u32 {
     subs.sort();
     let mut subs_at_positions: HashMap<u32, u32> = HashMap::new();
     for position in subs.iter() {
@@ -9,21 +14,20 @@ pub fn find_cheapest_alignment_cost(mut subs: Vec<u32>) -> u32 {
             .map_or(1, |count| *count + 1);
         subs_at_positions.insert(*position, new_value);
     }
-    let unique_position_sum: u32 = subs_at_positions.keys().fold(0, |acc, pos| acc + *pos);
-    find_cheapest_alignment_from(&subs, subs_at_positions, unique_position_sum)
+    find_cheapest_alignment_from(&subs, subs_at_positions, model)
 }
 
 fn find_cheapest_alignment_from(
     available_positions: &[u32],
     subs_at_positions: HashMap<u32, u32>,
-    sum_of_unique_positions: u32,
+    model: FuelModel,
 ) -> u32 {
     let i_median = available_positions.len() / 2;
     find_cheapest_alignment_from_index(
         i_median as isize,
         available_positions,
         &subs_at_positions,
-        sum_of_unique_positions,
+        &model,
     )
 }
 
@@ -31,41 +35,27 @@ fn find_cheapest_alignment_from_index(
     i: isize,
     available_positions: &[u32],
     subs_at_positions: &HashMap<u32, u32>,
-    sum_of_unique_positions: u32,
+    model: &FuelModel,
 ) -> u32 {
     if i < 0 || i >= available_positions.len() as isize {
         return u32::MAX;
     }
     match available_positions.len() {
         0 => u32::MAX,
-        1 => find_cost_for_position(
-            available_positions[0],
-            &subs_at_positions,
-            sum_of_unique_positions,
+        1 => find_cost_for_position(available_positions[0], &subs_at_positions, model),
+        2 => find_cost_for_position(available_positions[0], subs_at_positions, model).min(
+            find_cost_for_position(available_positions[1], subs_at_positions, model),
         ),
-        2 => find_cost_for_position(
-            available_positions[0],
-            subs_at_positions,
-            sum_of_unique_positions,
-        )
-        .min(find_cost_for_position(
-            available_positions[1],
-            subs_at_positions,
-            sum_of_unique_positions,
-        )),
         _ => {
-            let cost_for_i = find_cost_for_position(
-                available_positions[i as usize],
-                &subs_at_positions,
-                sum_of_unique_positions,
-            );
+            let cost_for_i =
+                find_cost_for_position(available_positions[i as usize], &subs_at_positions, model);
             let left_neighbor_cost = if i == 0 {
                 u32::MAX
             } else {
                 find_cost_for_position(
                     available_positions[(i - 1) as usize],
                     subs_at_positions,
-                    sum_of_unique_positions,
+                    model,
                 )
             };
             let right_neighbor_cost = if i + 1 >= available_positions.len() as isize {
@@ -74,7 +64,7 @@ fn find_cheapest_alignment_from_index(
                 find_cost_for_position(
                     available_positions[(i + 1) as usize],
                     subs_at_positions,
-                    sum_of_unique_positions,
+                    model,
                 )
             };
             let left = &available_positions[..(i - 1).max(0) as usize];
@@ -88,7 +78,7 @@ fn find_cheapest_alignment_from_index(
                     i - 2,
                     left,
                     subs_at_positions,
-                    sum_of_unique_positions,
+                    model,
                 )))
             };
             let find_cheapest_right = || {
@@ -96,7 +86,7 @@ fn find_cheapest_alignment_from_index(
                     i + 2,
                     right,
                     subs_at_positions,
-                    sum_of_unique_positions,
+                    model,
                 )))
             };
             if cost_for_i < right_neighbor_cost {
@@ -113,22 +103,14 @@ fn find_cheapest_alignment_from_index(
 fn find_cost_for_position(
     pos: u32,
     subs_at_positions: &HashMap<u32, u32>,
-    sum_of_unique_positions: u32,
+    model: &FuelModel,
 ) -> u32 {
-    subs_at_positions
-        .keys()
-        .try_fold(0, |acc, other_pos| {
-            let new_total = acc + cost_to_move(*other_pos, pos) * subs_at_positions[other_pos];
-            if new_total > sum_of_unique_positions {
-                None
-            } else {
-                Some(new_total)
-            }
-        })
-        .unwrap_or(u32::MAX)
+    subs_at_positions.keys().fold(0, |acc, other_pos| {
+        acc + cost_to_move(*other_pos, pos, model) * subs_at_positions[other_pos]
+    })
 }
 
-fn cost_to_move(from: u32, to: u32) -> u32 {
+fn cost_to_move(from: u32, to: u32, model: &FuelModel) -> u32 {
     let difference: i32 = (to as i32) - (from as i32);
     difference.abs() as u32
 }
