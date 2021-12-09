@@ -1,5 +1,6 @@
 pub use lanternfish::{Lanternfish, LanternfishPool};
 
+mod crab_subs;
 mod lanternfish;
 
 pub fn simulate_lanternfish(initial_fish: Vec<Lanternfish>, for_days: u32) -> usize {
@@ -8,9 +9,24 @@ pub fn simulate_lanternfish(initial_fish: Vec<Lanternfish>, for_days: u32) -> us
     pool.num_fish()
 }
 
+pub fn calculate_cheapest_alignment_fuel(crab_subs: Vec<u32>) -> u32 {
+    crab_subs::find_cheapest_alignment_cost(crab_subs)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn calculate_cheapest_alignment_fuel_is_correct_for_example_data() {
+        let subs = get_example_subs();
+        let cheapest_fuel = calculate_cheapest_alignment_fuel(subs);
+        assert_eq!(37, cheapest_fuel);
+    }
+
+    fn get_example_subs() -> Vec<u32> {
+        vec![16, 1, 2, 0, 4, 2, 7, 1, 2, 14]
+    }
 
     #[test]
     fn simulate_lanternfish_is_correct_for_example_data() {

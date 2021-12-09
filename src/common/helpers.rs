@@ -1,3 +1,4 @@
+use crate::Error;
 use std::iter::Filter;
 use std::num::ParseIntError;
 use std::str::Lines;
@@ -9,6 +10,13 @@ pub fn bit_lines(input: &str) -> Vec<Vec<u8>> {
         .lines()
         .map(|line| line.bytes().map(|byte| byte - ASCII_ZERO_VALUE).collect())
         .collect()
+}
+
+pub fn first_line(input: &str) -> Result<String, Error> {
+    match input.lines().next() {
+        Some(line) => Ok(String::from(line)),
+        None => Err(Error::new("No data found for lanternfish simulation!")),
+    }
 }
 
 pub fn int_lines<'a>(
