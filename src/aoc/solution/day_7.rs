@@ -10,7 +10,10 @@ pub fn solve_part_1(challenge_data: String) -> Result<()> {
     Ok(())
 }
 
-pub fn solve_part_2(_challenge_data: String) -> Result<()> {
+pub fn solve_part_2(challenge_data: String) -> Result<()> {
+    let subs = parse_crab_subs(challenge_data)?;
+    let cheapest_fuel_cost = calculate_cheapest_alignment_fuel(subs, FuelModel::TRIANGULAR);
+    println!("Cheapest fuel cost: {}", cheapest_fuel_cost);
     Ok(())
 }
 
