@@ -1,110 +1,59 @@
 mod aoc;
 mod common;
+mod prompt;
 mod sub;
 
 use std::env;
-use std::io;
-use std::io::Write;
-use std::str::FromStr;
 
 use common::AppParams;
 use common::Error;
 use common::Result;
+use prompt::prompt_select_from_numbered_list;
 
-macro_rules! invalid_number_msg {
-    () => {
-        "Please enter a valid number between {} and {}."
-    };
+enum ChallengeOption {
+    DisplayExampleData,
+    DisplayRealData,
+    RunSolution,
 }
 
 pub fn run(app_params: AppParams) -> Result<()> {
-    let challenge = aoc::get_challenge(prompt_select_challenge_day()?)?;
+    let challenge = aoc::get_challenge(aoc::prompt_select_challenge_day()?)?;
     println!("Loaded challenge for day {}.", challenge.day);
     let challenge_part: u8 = if challenge.parts > 1 {
-        prompt_select_challenge_part(challenge.parts)?
+        aoc::prompt_select_challenge_part(challenge.parts)?
     } else {
         1
     };
 
     let challenge_solution = aoc::get_challenge_solution(challenge.day, challenge_part);
 
-    let use_option_3 = challenge_solution.is_some();
-    let action_str = prompt(&format!(
-        "{}\n{}\n{}\n{}",
-        "What do you want to do?",
-        "1) Show challenge example data",
-        "2) Show challenge puzzle data",
-        if use_option_3 {
-            "3) Run challenge solution"
-        } else {
-            ""
-        }
-    ))?;
+    let mut options: Vec<ChallengeOption> = vec![
+        ChallengeOption::DisplayExampleData,
+        ChallengeOption::DisplayRealData,
+    ];
+    let mut captions: Vec<&str> = vec!["Show challenge example data", "Show challenge puzzle data"];
+    if challenge_solution.is_some() {
+        options.insert(0, ChallengeOption::RunSolution);
+        captions.insert(0, "Run challenge solution");
+    }
+    let challenge_option =
+        prompt_select_from_numbered_list("What do you want to do?", &options, &captions)?;
 
-    match action_str.trim() {
-        "1" => println!("Challenge example data:\n{}", challenge.example_data),
-        "2" => println!("Challenge data:\n{}", challenge.data),
-        "3" => {
+    match challenge_option {
+        ChallengeOption::DisplayExampleData => {
+            println!("Challenge example data:\n{}", challenge.example_data)
+        }
+        ChallengeOption::DisplayRealData => println!("Challenge data:\n{}", challenge.data),
+        ChallengeOption::RunSolution => {
             return match challenge_solution {
                 Some(solution) => solution.run(challenge, app_params),
-                None => Err(Box::new(Error::new(&format!(
-                    "Invalid choice {}!",
-                    action_str
-                )))),
+                None => Err(Box::new(Error::new(
+                    "Runtime error: Challenge solution not found!",
+                ))),
             }
-        }
-        _ => {
-            return Err(Box::new(Error::new(&format!(
-                "Invalid choice {}!",
-                action_str
-            ))))
         }
     }
     Ok(())
-}
-
-fn prompt_select_challenge_day() -> Result<u8> {
-    return prompt_select_bounded_number("Please select a challenge. (1-25)", 1, 25);
-}
-
-fn prompt_select_challenge_part(num_parts: u8) -> Result<u8> {
-    return prompt_select_bounded_number(
-        &format!("Which challenge part? (1-{})", num_parts),
-        1,
-        num_parts,
-    );
-}
-
-fn prompt_select_bounded_number(message: &str, min: u8, max: u8) -> Result<u8> {
-    let selection_str = prompt(message)?;
-    let parsed_number_result = u8::from_str(selection_str.trim());
-    if let Err(_) = parsed_number_result {
-        println!(invalid_number_msg!(), min, max);
-        return prompt_select_bounded_number(message, min, max);
-    }
-    let parsed_number = parsed_number_result.unwrap();
-    if parsed_number < min || parsed_number > max {
-        println!(invalid_number_msg!(), min, max);
-        return prompt_select_bounded_number(message, min, max);
-    }
-    return Ok(parsed_number);
-}
-
-fn prompt(message: &str) -> Result<String> {
-    let mut answer = String::new();
-    println!("{}", message);
-    print!("> ");
-    io::stdout().flush()?;
-    let mut prompt_result: io::Result<usize> = io::stdin().read_line(&mut answer);
-    while prompt_result.is_err() {
-        println!("Sorry, I didn't quite catch that! Try again.");
-        print!("> ");
-        prompt_result = io::stdin().read_line(&mut answer);
-    }
-    match prompt_result {
-        Ok(_) => Ok(answer),
-        Err(err) => panic!("{}", err),
-    }
 }
 
 pub fn parse_args(mut args: env::Args) -> Result<AppParams> {
