@@ -1,5 +1,5 @@
 use crate::sub::modelling::{simulate_lanternfish, Lanternfish};
-use crate::{common, Error, Result};
+use crate::{common, Result};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
