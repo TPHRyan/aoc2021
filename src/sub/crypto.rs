@@ -1,10 +1,10 @@
 mod seven_segment;
 
 use crate::Result;
-pub use seven_segment::{OutputDisplay, SevenSegments};
+pub use seven_segment::*;
 
-pub fn filter_non_unique_digits(outputs: &Vec<OutputDisplay>) -> Result<Vec<&SevenSegments>> {
-    let unique_digits: Vec<&SevenSegments> = outputs
+pub fn filter_non_unique_digits(outputs: &Vec<OutputDisplay>) -> Result<Vec<&u8>> {
+    let unique_digits: Vec<&u8> = outputs
         .iter()
         .map(|output| output.unique_digits())
         .flatten()

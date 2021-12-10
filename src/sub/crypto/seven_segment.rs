@@ -1,66 +1,27 @@
 use crate::{Error, Result};
 use std::fmt::{Display, Formatter};
 
-pub struct SevenSegments {
-    value: u8,
-}
-
-impl SevenSegments {
-    pub fn from(value: u8) -> SevenSegments {
-        SevenSegments { value }
-    }
-
-    pub fn from_str(s: &str) -> Result<SevenSegments> {
-        Ok(SevenSegments {
-            value: word_to_segments(s)?,
-        })
-    }
-
-    pub fn has_unique_segment_count(&self) -> bool {
-        match self.num_segments_on() {
-            2 | 3 | 4 | 7 => true,
-            _ => false,
-        }
-    }
-
-    pub fn num_segments_on(&self) -> u8 {
-        let mut total = 0;
-        for n in 0..8 {
-            if self.value & (1 << n) > 0 {
-                total += 1;
-            }
-        }
-        total
-    }
-}
-
-impl Display for SevenSegments {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", segments_to_word(self.value))
-    }
-}
-
 pub struct OutputDisplay {
-    pub segments: Vec<SevenSegments>,
+    pub segments: Vec<u8>,
 }
 
 impl OutputDisplay {
-    pub fn from(segments: Vec<SevenSegments>) -> OutputDisplay {
+    pub fn from(segments: Vec<u8>) -> OutputDisplay {
         OutputDisplay { segments }
     }
 
     pub fn from_str(s: &str) -> Result<OutputDisplay> {
-        let segments: Vec<SevenSegments> = s
+        let segments: Vec<u8> = s
             .split_whitespace()
-            .map(|word| SevenSegments::from_str(word))
-            .collect::<Result<Vec<SevenSegments>>>()?;
+            .map(|word| word_to_segments(word))
+            .collect::<Result<Vec<u8>>>()?;
         Ok(OutputDisplay { segments })
     }
 
-    pub fn unique_digits(&self) -> Vec<&SevenSegments> {
+    pub fn unique_digits(&self) -> Vec<&u8> {
         self.segments
             .iter()
-            .filter(|&seg| seg.has_unique_segment_count())
+            .filter(|&seg| has_unique_segment_count(*seg))
             .collect()
     }
 }
@@ -105,7 +66,7 @@ fn segment_letter_to_bit(letter: char) -> Result<u8> {
     }
 }
 
-fn segments_to_word(segments: u8) -> String {
+pub fn segments_to_word(segments: u8) -> String {
     let mut word = String::new();
     for n in 0..8 {
         let masked_bit = segments & (1 << n);
@@ -116,10 +77,27 @@ fn segments_to_word(segments: u8) -> String {
     word
 }
 
-fn word_to_segments(word: &str) -> Result<u8> {
+pub fn word_to_segments(word: &str) -> Result<u8> {
     let bits: Vec<u8> = word
         .chars()
         .map(|c| segment_letter_to_bit(c))
         .collect::<Result<Vec<u8>>>()?;
     Ok(bits.iter().fold(0, |acc, bit| acc | bit))
+}
+
+pub fn count_segments(segments: u8) -> u8 {
+    let mut count = 0;
+    let mut remainder = segments;
+    while remainder != 0 {
+        remainder &= remainder - 1;
+        count += 1;
+    }
+    count
+}
+
+pub fn has_unique_segment_count(segments: u8) -> bool {
+    match count_segments(segments) {
+        2 | 3 | 4 | 7 => true,
+        _ => false,
+    }
 }
