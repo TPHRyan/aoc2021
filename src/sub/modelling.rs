@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn simulate_lanternfish_is_correct_for_example_data() {
         let fish_count = simulate_lanternfish(get_example_fish(), 80);
-        println!("{}", fish_count);
+        assert_eq!(5934, fish_count);
     }
 
     fn get_example_fish() -> Vec<Lanternfish> {
