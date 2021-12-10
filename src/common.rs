@@ -1,4 +1,5 @@
 mod helpers;
+mod vector;
 
 use core::result::Result as CoreResult;
 use std::error::Error as ErrorTrait;
@@ -8,6 +9,9 @@ pub use helpers::bit_lines;
 pub use helpers::first_line;
 pub use helpers::int_lines;
 pub use helpers::split_lines_on;
+
+pub use vector::Component;
+pub use vector::Vector2;
 
 pub struct AppParams {
     pub program_name: String,

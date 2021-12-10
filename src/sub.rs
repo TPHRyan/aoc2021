@@ -1,6 +1,7 @@
 pub mod bingo;
 pub mod crypto;
 pub mod diagnostics;
+pub mod heightmaps;
 pub mod modelling;
 pub mod movement;
 pub mod pathfinding;
