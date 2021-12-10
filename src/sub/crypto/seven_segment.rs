@@ -1,25 +1,27 @@
+use crate::common::split_lines_on;
 use crate::{Error, Result};
 use std::fmt::{Display, Formatter};
 
+#[derive(Clone)]
 pub struct OutputDisplay {
-    pub segments: Vec<u8>,
+    pub digits: Vec<u8>,
 }
 
 impl OutputDisplay {
-    pub fn from(segments: Vec<u8>) -> OutputDisplay {
-        OutputDisplay { segments }
+    pub fn from(digits: Vec<u8>) -> OutputDisplay {
+        OutputDisplay { digits }
     }
 
     pub fn from_str(s: &str) -> Result<OutputDisplay> {
         let segments: Vec<u8> = s
             .split_whitespace()
-            .map(|word| word_to_segments(word))
+            .map(|word| signal_to_digit(word))
             .collect::<Result<Vec<u8>>>()?;
-        Ok(OutputDisplay { segments })
+        Ok(OutputDisplay::from(segments))
     }
 
     pub fn unique_digits(&self) -> Vec<&u8> {
-        self.segments
+        self.digits
             .iter()
             .filter(|&seg| has_unique_segment_count(*seg))
             .collect()
@@ -31,7 +33,7 @@ impl Display for OutputDisplay {
         write!(
             f,
             "{}",
-            self.segments
+            self.digits
                 .iter()
                 .map(|segments| format!("{}", segments))
                 .collect::<Vec<String>>()
@@ -40,6 +42,7 @@ impl Display for OutputDisplay {
     }
 }
 
+#[cfg(test)]
 fn bit_to_segment_letter(bit: u8) -> char {
     match bit {
         0b1000000 => 'a',
@@ -66,28 +69,59 @@ fn segment_letter_to_bit(letter: char) -> Result<u8> {
     }
 }
 
-pub fn segments_to_word(segments: u8) -> String {
-    let mut word = String::new();
-    for n in 0..8 {
-        let masked_bit = segments & (1 << n);
-        if masked_bit > 0 {
-            word = format!("{}{}", bit_to_segment_letter(masked_bit), word);
-        }
+#[cfg(test)]
+pub fn digit_to_signal(digit: u8) -> String {
+    let mut signal = String::new();
+    let mut remainder = digit;
+    while remainder != 0 {
+        let previous = remainder;
+        remainder &= remainder - 1;
+        signal = format!("{}{}", bit_to_segment_letter(previous - remainder), signal)
     }
-    word
+    signal
 }
 
-pub fn word_to_segments(word: &str) -> Result<u8> {
-    let bits: Vec<u8> = word
+pub fn signal_to_digit(signal: &str) -> Result<u8> {
+    let digit: Vec<u8> = signal
         .chars()
         .map(|c| segment_letter_to_bit(c))
         .collect::<Result<Vec<u8>>>()?;
-    Ok(bits.iter().fold(0, |acc, bit| acc | bit))
+    Ok(digit.iter().fold(0, |acc, bit| acc | bit))
 }
 
-pub fn count_segments(segments: u8) -> u8 {
+pub fn signals_to_digits(signals: &[&str]) -> Result<Vec<u8>> {
+    signals
+        .iter()
+        .map(|signal| signal_to_digit(signal))
+        .collect()
+}
+
+pub fn signal_output_lines_to_signals_and_output(
+    lines: &str,
+) -> Result<Vec<(Vec<u8>, OutputDisplay)>> {
+    Ok(split_lines_on(lines, " | ")
+        .filter_map(|parts| match parts[..] {
+            [signal_str, output_str] => Some((
+                signal_str.split_whitespace().collect::<Vec<&str>>(),
+                output_str,
+            )),
+            _ => None,
+        })
+        .map(
+            |(signal_vec, output_str)| match signals_to_digits(&signal_vec) {
+                Ok(digits) => match OutputDisplay::from_str(output_str) {
+                    Ok(display) => Ok((digits, display)),
+                    Err(e) => Err(e),
+                },
+                Err(e) => Err(e),
+            },
+        )
+        .collect::<Result<Vec<(Vec<u8>, OutputDisplay)>>>()?)
+}
+
+pub fn count_segments(digit: u8) -> u8 {
     let mut count = 0;
-    let mut remainder = segments;
+    let mut remainder = digit;
     while remainder != 0 {
         remainder &= remainder - 1;
         count += 1;
@@ -95,9 +129,19 @@ pub fn count_segments(segments: u8) -> u8 {
     count
 }
 
-pub fn has_unique_segment_count(segments: u8) -> bool {
-    match count_segments(segments) {
+pub fn has_unique_segment_count(digit: u8) -> bool {
+    match count_segments(digit) {
         2 | 3 | 4 | 7 => true,
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::sub::crypto::digit_to_signal;
+
+    #[test]
+    fn digit_to_signal_returns_correct_for_8() {
+        assert_eq!("abcdefg", &digit_to_signal(0b1111111));
     }
 }

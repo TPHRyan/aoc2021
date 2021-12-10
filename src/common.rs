@@ -7,6 +7,7 @@ use std::fmt::{Debug, Display, Formatter};
 pub use helpers::bit_lines;
 pub use helpers::first_line;
 pub use helpers::int_lines;
+pub use helpers::split_lines_on;
 
 pub struct AppParams {
     pub program_name: String,

@@ -36,6 +36,17 @@ pub fn filter_newlines<'a>(input: &'a String) -> Filter<Lines<'_>, fn(&&'a str) 
     input.lines().filter(|&slice| slice != "")
 }
 
+pub fn split_lines_on<'a>(
+    input: &'a str,
+    pat: &'a str,
+) -> Box<dyn Iterator<Item = Vec<&'a str>> + 'a> {
+    Box::new(
+        input
+            .lines()
+            .map(move |s| s.split(pat).collect::<Vec<&'a str>>()),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
