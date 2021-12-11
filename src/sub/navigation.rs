@@ -9,6 +9,25 @@ pub fn parse_chunks_for_lines(input_lines: &str) -> Vec<ParseResult> {
         .collect()
 }
 
+pub fn calculate_completion_score(stack: &mut Vec<char>) -> u64 {
+    let mut score: u64 = 0;
+    while let Some(c) = stack.pop() {
+        score *= 5;
+        score += score_for_char(c);
+    }
+    score
+}
+
+fn score_for_char(c: char) -> u64 {
+    match c {
+        '(' => 1,
+        '[' => 2,
+        '{' => 3,
+        '<' => 4,
+        _ => 0,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::chunk::{ChunkStyle, ParseError};
@@ -44,5 +63,14 @@ mod tests {
         {
             assert_eq!(expected_error, actual_error);
         }
+    }
+
+    #[test]
+    fn calculate_completion_score_works_for_example() {
+        let test_str = "<{([";
+        let mut stack: Vec<char> = test_str.chars().collect();
+        let expected_score = 294;
+        let actual_score = calculate_completion_score(&mut stack);
+        assert_eq!(expected_score, actual_score);
     }
 }

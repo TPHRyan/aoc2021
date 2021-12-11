@@ -5,7 +5,7 @@ use super::{Chunk, ChunkStyle};
 #[derive(Debug)]
 pub enum ParseError {
     EncounteredStyle(ChunkStyle),
-    EOL,
+    EOL(Vec<char>),
     Error(Box<dyn ErrorTrait>),
     UnrecognizedChar,
 }
@@ -23,8 +23,8 @@ impl PartialEq for ParseError {
                 Self::EncounteredStyle(other_style) => style == other_style,
                 _ => false,
             },
-            Self::EOL => match other {
-                Self::EOL => true,
+            Self::EOL(_) => match other {
+                Self::EOL(_) => true,
                 _ => false,
             },
             Self::UnrecognizedChar => match other {
@@ -70,7 +70,7 @@ pub fn parse_chunks_for_line(input: &str) -> ParseResult {
     if stack.is_empty() {
         Ok(chunks.into_iter().map(|chunk_box| *chunk_box).collect())
     } else {
-        Err(ParseError::EOL)
+        Err(ParseError::EOL(stack))
     }
 }
 
