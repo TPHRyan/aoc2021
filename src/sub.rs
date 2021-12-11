@@ -4,6 +4,7 @@ pub mod diagnostics;
 pub mod heightmaps;
 pub mod modelling;
 pub mod movement;
+pub mod navigation;
 pub mod pathfinding;
 pub mod scanning;
 
