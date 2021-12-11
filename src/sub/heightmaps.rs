@@ -1,9 +1,9 @@
+pub mod basins;
 mod heightmap;
-
-use std::collections::HashMap;
 
 use crate::common::Vector2;
 pub use heightmap::Heightmap;
+use std::collections::HashMap;
 
 pub fn find_valleys(heightmap: &Heightmap) -> Vec<Vector2<u32>> {
     let mut valleys = vec![];
@@ -26,6 +26,15 @@ pub fn get_risk_levels(heightmap: &Heightmap) -> HashMap<Vector2<u32>, u8> {
         }
     }
     risk_levels
+}
+
+pub fn get_basin_sizes(heightmap: &Heightmap, sorted: bool) -> Vec<usize> {
+    let basins = basins::find_basins(heightmap);
+    let mut basin_sizes: Vec<usize> = basins.values().map(|basin| basin.len()).collect();
+    if sorted {
+        basin_sizes.sort_unstable();
+    }
+    basin_sizes
 }
 
 #[cfg(test)]
@@ -61,6 +70,18 @@ mod tests {
         assert_eq!(expected_valleys.len(), valleys.len());
         for (&expected_valley, actual_valley) in expected_valleys.iter().zip(valleys) {
             assert_eq!(expected_valley, actual_valley);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn find_basin_sizes_works_on_example_data() -> Result<()> {
+        let example_heightmap = Heightmap::from_str(TEST_STR)?;
+        let basin_sizes = get_basin_sizes(&example_heightmap, true);
+        let expected_sizes: Vec<usize> = vec![3, 9, 9, 14];
+        assert_eq!(expected_sizes.len(), basin_sizes.len());
+        for (&expected_size, actual_size) in expected_sizes.iter().zip(basin_sizes) {
+            assert_eq!(expected_size, actual_size);
         }
         Ok(())
     }

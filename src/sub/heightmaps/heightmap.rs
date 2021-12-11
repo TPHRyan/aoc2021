@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::iter::repeat;
 use std::num::ParseIntError;
 use std::str::FromStr;
@@ -44,7 +45,8 @@ impl Heightmap {
         }
     }
 
-    pub fn neighbour_value(&self, pos: Vector2<u32>, direction: Vector2<i8>) -> u8 {
+    pub fn neighbour_value<T: Borrow<Vector2<u32>>>(&self, pos: T, direction: Vector2<i8>) -> u8 {
+        let _pos = pos.borrow();
         let delta_x: i32 = if direction.x > 0 {
             1
         } else if direction.x < 0 {
@@ -52,7 +54,7 @@ impl Heightmap {
         } else {
             0
         };
-        let try_col = pos.x as i32 + delta_x;
+        let try_col = _pos.x as i32 + delta_x;
         let delta_y: i32 = if direction.y > 0 {
             1
         } else if direction.y < 0 {
@@ -60,7 +62,7 @@ impl Heightmap {
         } else {
             0
         };
-        let try_row = pos.y as i32 + delta_y;
+        let try_row = _pos.y as i32 + delta_y;
 
         if try_row < 0
             || try_row as usize >= self.data.len()
