@@ -7,6 +7,8 @@ type Coords = Vector2<i64>;
 pub struct Octopuses {
     map2d: Map2D<u8>,
     flashes: Map2D<bool>,
+    total_flash_count: u64,
+    last_flash_count: u64,
 }
 
 impl FromStr for Octopuses {
@@ -18,17 +20,19 @@ impl FromStr for Octopuses {
         Ok(Octopuses {
             map2d: main_map,
             flashes: flash_map,
+            total_flash_count: 0,
+            last_flash_count: 0,
         })
     }
 }
 
 impl Octopuses {
     pub fn simulate(&mut self, n_ticks: u64) -> u64 {
-        let mut flash_count = 0;
         for _ in 0..n_ticks {
-            flash_count += self.tick();
+            self.last_flash_count = self.tick();
+            self.total_flash_count += self.last_flash_count;
         }
-        flash_count
+        self.total_flash_count
     }
 
     pub fn tick(&mut self) -> u64 {
