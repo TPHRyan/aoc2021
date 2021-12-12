@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::sub::heightmaps::{get_basin_sizes, get_risk_levels, Heightmap};
 use crate::Result;
 

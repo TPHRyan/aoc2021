@@ -1,6 +1,10 @@
-pub use micromath::vector::Component;
-use micromath::vector::Vector;
+mod component;
+mod vector;
+
+pub use component::Component;
+use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
+use vector::Vector;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct Vector2<C: Component> {
@@ -43,6 +47,37 @@ impl<C: Component> Vector<C> for Vector2<C> {
 
     fn dot(self, rhs: Self) -> C {
         (self.x * rhs.x) + (self.y * rhs.y)
+    }
+}
+
+impl<C: Component + PartialOrd> PartialOrd for Vector2<C> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.y.partial_cmp(&other.y) {
+            Some(ord_y) => match ord_y {
+                Ordering::Less | Ordering::Greater => Some(ord_y),
+                Ordering::Equal => match self.x.partial_cmp(&other.x) {
+                    Some(ord_x) => Some(ord_x),
+                    None => None,
+                },
+            },
+            None => None,
+        }
+    }
+}
+
+impl<C: Component + PartialOrd + Ord> Ord for Vector2<C> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.y.cmp(&other.y) {
+            ord @ (Ordering::Less | Ordering::Greater) => ord,
+            Ordering::Equal => self.x.cmp(&other.x),
+        }
+    }
+
+    fn clamp(self, min: Self, max: Self) -> Self
+    where
+        Self: Sized,
+    {
+        Self::from(self.x.clamp(min.x, max.x), self.y.clamp(min.y, max.y))
     }
 }
 

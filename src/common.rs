@@ -1,5 +1,6 @@
 mod helpers;
-mod vector;
+pub mod map2d;
+pub mod vector;
 
 use core::result::Result as CoreResult;
 use std::error::Error as ErrorTrait;
@@ -9,6 +10,8 @@ pub use helpers::bit_lines;
 pub use helpers::first_line;
 pub use helpers::int_lines;
 pub use helpers::split_lines_on;
+
+pub use map2d::Map2D;
 
 pub use vector::Component;
 pub use vector::Vector2;

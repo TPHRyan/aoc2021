@@ -5,11 +5,23 @@ use crate::common::Vector2;
 pub use heightmap::Heightmap;
 use std::collections::HashMap;
 
-pub fn find_valleys(heightmap: &Heightmap) -> Vec<Vector2<u32>> {
+type Coords = Vector2<i64>;
+
+pub fn find_valleys(heightmap: &Heightmap) -> Vec<Coords> {
     let mut valleys = vec![];
     'next_position: for (val, pos) in heightmap.iter() {
-        for [x_dir, y_dir] in [[-1, 0], [0, -1], [1, 0], [0, 1]] {
-            if heightmap.neighbour_value(pos, Vector2::from(x_dir, y_dir)) <= val {
+        let cursor_at_pos = heightmap.cursor_at(pos).expect(&format!(
+            "Invalid position for cursor encountered: ({}, {})",
+            pos.x, pos.y
+        ));
+        let cursors = vec![
+            cursor_at_pos.left(),
+            cursor_at_pos.up(),
+            cursor_at_pos.right(),
+            cursor_at_pos.down(),
+        ];
+        for cursor in cursors.into_iter().filter_map(|c| c) {
+            if cursor.value() <= val {
                 continue 'next_position;
             }
         }
@@ -18,8 +30,8 @@ pub fn find_valleys(heightmap: &Heightmap) -> Vec<Vector2<u32>> {
     valleys
 }
 
-pub fn get_risk_levels(heightmap: &Heightmap) -> HashMap<Vector2<u32>, u8> {
-    let mut risk_levels: HashMap<Vector2<u32>, u8> = HashMap::new();
+pub fn get_risk_levels(heightmap: &Heightmap) -> HashMap<Coords, u8> {
+    let mut risk_levels: HashMap<Coords, u8> = HashMap::new();
     for pos in find_valleys(&heightmap) {
         if let Some(val) = heightmap.get(pos) {
             risk_levels.insert(pos, val + 1);
@@ -41,6 +53,7 @@ pub fn get_basin_sizes(heightmap: &Heightmap, sorted: bool) -> Vec<usize> {
 mod tests {
     use super::*;
     use crate::Result;
+    use std::str::FromStr;
 
     const TEST_STR: &str = "
 2199943210
@@ -60,7 +73,7 @@ mod tests {
     #[test]
     fn find_valleys_works_on_example_data() -> Result<()> {
         let example_heightmap = Heightmap::from_str(TEST_STR)?;
-        let expected_valleys: Vec<Vector2<u32>> = vec![
+        let expected_valleys: Vec<Coords> = vec![
             Vector2::from(1, 0),
             Vector2::from(9, 0),
             Vector2::from(2, 2),
@@ -90,7 +103,7 @@ mod tests {
     fn get_risk_levels_works_on_example_data() -> Result<()> {
         let example_heightmap = Heightmap::from_str(TEST_STR)?;
         let risk_levels = get_risk_levels(&example_heightmap);
-        let expected_risk_levels: Vec<(Vector2<u32>, u8)> = vec![
+        let expected_risk_levels: Vec<(Coords, u8)> = vec![
             (Vector2::from(1, 0), 2),
             (Vector2::from(9, 0), 1),
             (Vector2::from(2, 2), 6),

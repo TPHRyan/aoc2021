@@ -1,112 +1,49 @@
-use std::borrow::Borrow;
-use std::iter::repeat;
-use std::num::ParseIntError;
+use std::error::Error;
 use std::str::FromStr;
 
+use crate::common::map2d;
 use crate::common::Vector2;
-use crate::Result;
+
+type Coords = Vector2<i64>;
 
 pub struct Heightmap {
-    data: Vec<Vec<u8>>,
+    map2d: map2d::Map2D<u8>,
+}
+
+impl FromStr for Heightmap {
+    type Err = Box<dyn Error>;
+
+    fn from_str(s: &str) -> std::result::Result<Heightmap, Self::Err> {
+        Ok(Heightmap {
+            map2d: map2d::Map2D::from_str(s)?,
+        })
+    }
 }
 
 impl Heightmap {
-    pub fn from_str(s: &str) -> Result<Heightmap> {
-        let data: Vec<Vec<u8>> = s
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|c| u8::from_str(&String::from(c)))
-                    .collect::<std::result::Result<Vec<u8>, ParseIntError>>()
-            })
-            .filter(|res| match res {
-                Ok(nums) => !nums.is_empty(),
-                Err(_) => true,
-            })
-            .collect::<std::result::Result<Vec<Vec<u8>>, ParseIntError>>()?;
-        Ok(Heightmap { data })
-    }
-
     #[cfg(test)]
-    pub fn size(&self) -> Vector2<u32> {
-        match self.data.first() {
-            Some(first) => Vector2::from(first.len() as u32, self.data.len() as u32),
-            None => Vector2::from(0, 0),
-        }
+    pub fn size(&self) -> Vector2<u64> {
+        self.map2d.size()
     }
 
-    pub fn get(&self, pos: Vector2<u32>) -> Option<u8> {
-        match self.data.get(pos.y as usize) {
-            Some(row) => match row.get(pos.x as usize) {
-                Some(&val) => Some(val),
-                None => None,
-            },
-            None => None,
-        }
+    pub fn get(&self, pos: Coords) -> Option<u8> {
+        self.map2d.get(pos)
     }
 
-    pub fn neighbour_value<T: Borrow<Vector2<u32>>>(&self, pos: T, direction: Vector2<i8>) -> u8 {
-        let _pos = pos.borrow();
-        let delta_x: i32 = if direction.x > 0 {
-            1
-        } else if direction.x < 0 {
-            -1
-        } else {
-            0
-        };
-        let try_col = _pos.x as i32 + delta_x;
-        let delta_y: i32 = if direction.y > 0 {
-            1
-        } else if direction.y < 0 {
-            -1
-        } else {
-            0
-        };
-        let try_row = _pos.y as i32 + delta_y;
-
-        if try_row < 0
-            || try_row as usize >= self.data.len()
-            || try_col < 0
-            || try_col as usize >= self.data[try_row as usize].len()
-        {
-            9
-        } else {
-            self.data[try_row as usize][try_col as usize]
-        }
+    pub fn cursor_at(&self, pos: Vector2<i64>) -> Option<map2d::Cursor<u8>> {
+        self.map2d.cursor_at(pos)
     }
 
-    pub fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = (u8, Vector2<u32>)> + 'a> {
-        Box::new(
-            self.data
-                .iter()
-                .enumerate()
-                .map(|(y_outer, row)| {
-                    repeat(y_outer)
-                        .zip(row.iter())
-                        .enumerate()
-                        .map(|(x, (y, &val))| (val, Vector2::from(x as u32, y as u32)))
-                })
-                .flatten(),
-        )
+    pub fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = (u8, Coords)> + 'a> {
+        self.map2d.iter()
     }
 }
 
 impl IntoIterator for Heightmap {
-    type Item = (u8, Vector2<u32>);
+    type Item = (u8, Coords);
     type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        Box::new(
-            self.data
-                .into_iter()
-                .enumerate()
-                .map(|(y_outer, row)| {
-                    repeat(y_outer)
-                        .zip(row.into_iter())
-                        .enumerate()
-                        .map(|(y, (x, val))| (val, Vector2::from(x as u32, y as u32)))
-                })
-                .flatten(),
-        )
+        self.map2d.into_iter()
     }
 }
