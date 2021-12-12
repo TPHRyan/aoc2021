@@ -1,8 +1,7 @@
-mod danger_map;
-mod line_segment;
+mod hydrothermal_vents;
 
-use danger_map::DangerMap;
-pub use line_segment::LineSegment;
+use hydrothermal_vents::DangerMap;
+pub use hydrothermal_vents::LineSegment;
 
 pub fn count_dangerous_points(vents: &Vec<LineSegment>, consider_diagonal_vents: bool) -> u32 {
     let mut danger_map = DangerMap::new();
@@ -21,22 +20,7 @@ mod tests {
     use super::*;
     use micromath::vector::Vector2d;
 
-    const TEST_STR: &str = "0,9 -> 5,9\n8,0 -> 0,8\n9,4 -> 3,4\n2,2 -> 2,1\n7,0 -> 7,4\n6,4 -> 2,0\n0,9 -> 2,9\n3,4 -> 1,4\n0,0 -> 8,8\n5,5 -> 8,2";
-
-    #[test]
-    fn can_create_segments_from_str() {
-        let example_segments = get_example_segments();
-        let segments_result: Result<Vec<LineSegment>, serde_scan::ScanError> = TEST_STR
-            .lines()
-            .map(|line| LineSegment::from_str(line))
-            .collect();
-        assert!(segments_result.is_ok());
-        let segments = segments_result.unwrap();
-        for (expected, actual) in example_segments.iter().zip(segments.iter()) {
-            assert_eq!(expected.p1, actual.p1);
-            assert_eq!(expected.p2, actual.p2);
-        }
-    }
+    pub const TEST_STR: &str = "0,9 -> 5,9\n8,0 -> 0,8\n9,4 -> 3,4\n2,2 -> 2,1\n7,0 -> 7,4\n6,4 -> 2,0\n0,9 -> 2,9\n3,4 -> 1,4\n0,0 -> 8,8\n5,5 -> 8,2";
 
     #[test]
     fn count_dangerous_points_works_for_example_data_orthogonal() {
@@ -52,7 +36,7 @@ mod tests {
         assert_eq!(12, danger_count);
     }
 
-    fn get_example_segments() -> Vec<LineSegment> {
+    pub fn get_example_segments() -> Vec<LineSegment> {
         return vec![
             LineSegment::from((Vector2d::from((0, 9)), Vector2d::from((5, 9)))),
             LineSegment::from((Vector2d::from((8, 0)), Vector2d::from((0, 8)))),

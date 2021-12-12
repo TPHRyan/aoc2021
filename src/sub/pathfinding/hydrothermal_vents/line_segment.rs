@@ -73,3 +73,24 @@ fn range_iter(from: i32, to: i32) -> Box<dyn Iterator<Item = i32>> {
         Box::new((to..=from).rev())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::sub::pathfinding::tests::{get_example_segments, TEST_STR};
+
+    #[test]
+    fn can_create_segments_from_str() {
+        let example_segments = get_example_segments();
+        let segments_result: Result<Vec<LineSegment>, serde_scan::ScanError> = TEST_STR
+            .lines()
+            .map(|line| LineSegment::from_str(line))
+            .collect();
+        assert!(segments_result.is_ok());
+        let segments = segments_result.unwrap();
+        for (expected, actual) in example_segments.iter().zip(segments.iter()) {
+            assert_eq!(expected.p1, actual.p1);
+            assert_eq!(expected.p2, actual.p2);
+        }
+    }
+}
