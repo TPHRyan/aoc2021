@@ -1,8 +1,10 @@
 mod crab_subs;
 mod lanternfish;
+mod octopuses;
 
 pub use crate::sub::modelling::crab_subs::FuelModel;
 pub use lanternfish::{Lanternfish, LanternfishPool};
+pub use octopuses::Octopuses;
 
 pub fn simulate_lanternfish(initial_fish: Vec<Lanternfish>, for_days: u32) -> usize {
     let mut pool = LanternfishPool::from(initial_fish);
