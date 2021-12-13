@@ -1,4 +1,7 @@
+mod cave_systems;
 mod hydrothermal_vents;
+
+pub use cave_systems::CaveSystem;
 
 use hydrothermal_vents::DangerMap;
 pub use hydrothermal_vents::LineSegment;

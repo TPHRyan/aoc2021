@@ -53,5 +53,10 @@
     "parts": 2,
     "example_data": "5483143223\n2745854711\n5264556173\n6141336146\n6357385478\n4167524645\n2176841721\n6882881134\n4846848554\n5283751526",
     "data": "1553421288\n5255384882\n1224315732\n4258242274\n1658564216\n6872651182\n5775552238\n5622545172\n8766672318\n2178374835"
+  },
+  "12": {
+    "parts": 2,
+    "example_data": "fs-end\nhe-DX\nfs-he\nstart-DX\npj-DX\nend-zg\nzg-sl\nzg-pj\npj-he\nRW-he\nfs-DX\npj-RW\nzg-RW\nstart-pj\nhe-WI\nzg-he\npj-fs\nstart-RW",
+    "data": "we-NX\nys-px\nys-we\npx-end\nyq-NX\npx-NX\nyq-px\nqk-yq\npr-NX\nwq-EY\npr-oe\nwq-pr\nys-end\nstart-we\nys-start\noe-DW\nEY-oe\nend-oe\npr-yq\npr-we\nwq-start\noe-NX\nyq-EY\nys-wq\nys-pr"
   }
 }
