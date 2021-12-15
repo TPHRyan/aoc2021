@@ -73,11 +73,15 @@ fn parse_cave_names(s: &str) -> Result<[&str; 2]> {
 }
 
 impl CaveSystem {
-    pub fn find_paths(&self, from_name: &str, to_name: &str) -> Vec<Vec<&str>> {
+    pub fn find_paths(
+        &self,
+        from_name: &str,
+        to_name: &str,
+        allow_double_dip: bool,
+    ) -> Vec<Vec<&str>> {
         let from = self.get_existing_node_id_by_name(from_name);
         let to = self.get_existing_node_id_by_name(to_name);
-        let visited_from = VisitedCaves::new();
-        self.find_paths_from(from, to, vec![], visited_from)
+        self.find_paths_from(from, to, vec![], allow_double_dip)
     }
 
     fn find_paths_from(
@@ -85,7 +89,7 @@ impl CaveSystem {
         from: usize,
         to: usize,
         visited_small: Vec<usize>,
-        visited_from: VisitedCaves,
+        allow_double_dip: bool,
     ) -> Vec<Vec<&str>> {
         let empty = vec![];
         if from > self.nodes.len() || to > self.nodes.len() {
@@ -108,18 +112,25 @@ impl CaveSystem {
                         }
                         _ => {
                             let mut new_visited_small = visited_small.clone();
-                            let mut new_visited_from = visited_from.clone();
+                            let mut new_allow_double_dip = allow_double_dip;
                             if let CaveType::Small = next_type {
-                                if visited_small.contains(next_id)
-                                    || visited_from.have_already_visited(*next_id, from)
-                                {
-                                    continue;
+                                if visited_small.contains(next_id) {
+                                    if new_allow_double_dip {
+                                        new_allow_double_dip = false;
+                                    } else {
+                                        continue;
+                                    }
+                                } else {
+                                    new_visited_small.push(*next_id);
                                 }
-                                new_visited_small.push(*next_id);
                             }
-                            new_visited_from.visit_from(from, *next_id);
                             let mut next_paths: Vec<Vec<&str>> = self
-                                .find_paths_from(*next_id, to, new_visited_small, new_visited_from)
+                                .find_paths_from(
+                                    *next_id,
+                                    to,
+                                    new_visited_small,
+                                    new_allow_double_dip,
+                                )
                                 .into_iter()
                                 .map(|mut path| {
                                     path.push(from_node.name());
@@ -225,7 +236,7 @@ mod tests {
         let test_str = "df-start\nzm-end\nstart-zm\nend-df";
         let cave_system = CaveSystem::from_str(test_str)?;
         let expected_paths = vec!["start,df,end", "start,zm,end"];
-        let paths = cave_system.find_paths("start", "end");
+        let paths = cave_system.find_paths("start", "end", false);
         for (mut path, expected_path) in paths.into_iter().zip(expected_paths) {
             path.reverse();
             assert_eq!(expected_path, path.join(","));
@@ -237,8 +248,17 @@ mod tests {
     fn can_find_correct_number_of_paths_through_small_caves() -> Result<()> {
         let test_str = "start-A\nstart-b\nA-c\nA-b\nb-d\nA-end\nb-end";
         let cave_system = CaveSystem::from_str(test_str)?;
-        let paths = cave_system.find_paths("start", "end");
+        let paths = cave_system.find_paths("start", "end", false);
         assert_eq!(10, paths.len());
+        Ok(())
+    }
+
+    #[test]
+    fn can_find_correct_number_of_paths_through_small_caves_with_double_dip() -> Result<()> {
+        let test_str = "start-A\nstart-b\nA-c\nA-b\nb-d\nA-end\nb-end";
+        let cave_system = CaveSystem::from_str(test_str)?;
+        let paths = cave_system.find_paths("start", "end", true);
+        assert_eq!(36, paths.len());
         Ok(())
     }
 }
